@@ -2,7 +2,7 @@
 const { useState, useEffect, createElement } = React;
 
 // Use global Lucide icons
-const { Heart, Club, Diamond, Spade, Users, Trophy, RotateCcw, Play, CheckCircle } = LucideReact;
+const { Heart, Club, Diamond, Spade, Users, Trophy, RotateCcw, Play, CheckCircle, XCircle } = LucideReact;
 
 // Suit icons mapping
 const suitIcons = {
@@ -723,7 +723,11 @@ function JudgementGame() {
                       </p>
                     </div>
                     {handsWon[idx] !== null && (
-                      <CheckCircle className="w-6 h-6 text-green-600" />
+                      handsWon[idx] === bids[idx] ? (
+                        <CheckCircle className="w-6 h-6 text-green-600" />
+                      ) : (
+                        <XCircle className="w-6 h-6 text-red-600" />
+                      )
                     )}
                   </div>
 
@@ -734,7 +738,9 @@ function JudgementGame() {
                         onClick={() => submitHandsWon(idx, count)}
                         className={`py-3 rounded-lg font-semibold transition-all ${
                           handsWon[idx] === count
-                            ? 'bg-green-600 text-white card-shadow scale-105'
+                            ? (count === bids[idx] 
+                                ? 'bg-green-600 text-white card-shadow scale-105' 
+                                : 'bg-red-600 text-white card-shadow scale-105')
                             : 'bg-white hover:bg-gray-100 text-gray-700 border-2 border-gray-300'
                         }`}
                       >
