@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Judgement - Local Test</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #f5f5f5;
+    }
+    .status {
+      max-width: 800px;
+      margin: 0 auto 20px;
+      padding: 20px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .status h2 {
+      margin-top: 0;
+      color: #166534;
+    }
+    .check {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 5px;
+    }
+    .check.pass {
+      background: #d1fae5;
+      color: #065f46;
+    }
+    .check.fail {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+    .launch-btn {
+      background: #166534;
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 20px;
+    }
+    .launch-btn:hover {
+      background: #15803d;
+    }
+    .launch-btn:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+    }
+    #app {
+      display: none;
+    }
+    #app.show {
+      display: block;
+    }
+
+    /* Game Styles */
+    @import url('https://fonts.googleapis.com/css2?family=Crimson+Text:wght@600;700&family=Fredoka:wght@400;500;600&family=Poppins:wght@400;600;700&display=swap');
+          
+    .felt-texture {
+      background-image: 
+        repeating-linear-gradient(
+          90deg,
+          rgba(0, 0, 0, 0.03) 0px,
+          rgba(0, 0, 0, 0.03) 1px,
+          transparent 1px,
+          transparent 2px
+        ),
+        repeating-linear-gradient(
+          0deg,
+          rgba(0, 0, 0, 0.03) 0px,
+          rgba(0, 0, 0, 0.03) 1px,
+          transparent 1px,
+          transparent 2px
+        );
+    }
+    
+    .card-shadow {
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 
+                  0 2px 4px -1px rgba(0, 0, 0, 0.2),
+                  inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+    }
+    
+    .gold-glow {
+      box-shadow: 0 0 20px rgba(251, 191, 36, 0.3),
+                  0 0 40px rgba(251, 191, 36, 0.2);
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    .float-animation {
+      animation: float 3s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body>
+  <div class="status">
+    <h2>🔍 Pre-flight Check</h2>
+    <div id="checks"></div>
+    <button id="launch" class="launch-btn" disabled>Checking...</button>
+  </div>
+  
+  <div id="app"></div>
+
+  <!-- React and ReactDOM from CDN -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script>window.react = React;</script>
+  
+  <!-- Babel Standalone for JSX transformation -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide-react"></script>
+
+  <script>
+    const checks = [
+      { name: 'React', test: () => typeof React !== 'undefined' },
+      { name: 'ReactDOM', test: () => typeof ReactDOM !== 'undefined' },
+      { name: 'Babel', test: () => typeof Babel !== 'undefined' },
+      { name: 'Lucide React', test: () => typeof LucideReact !== 'undefined' },
+      { name: 'React Hooks', test: () => typeof React.useState !== 'undefined' },
+      { name: 'JudgementGame Component', test: () => typeof window.JudgementGame !== 'undefined' }
+    ];
+
+    function runChecks() {
+      const container = document.getElementById('checks');
+      let allPassed = true;
+
+      checks.forEach(check => {
+        const passed = check.test();
+        if (!passed) allPassed = false;
+
+        const div = document.createElement('div');
+        div.className = `check ${passed ? 'pass' : 'fail'}`;
+        div.innerHTML = `
+          <span>${passed ? '✓' : '✗'}</span>
+          <span>${check.name}</span>
+        `;
+        container.appendChild(div);
+      });
+
+      const btn = document.getElementById('launch');
+      if (allPassed) {
+        btn.textContent = '🚀 Launch App';
+        btn.disabled = false;
+        btn.onclick = launchApp;
+      } else {
+        btn.textContent = '❌ Some checks failed - see console';
+        btn.disabled = true;
+        console.error('Pre-flight checks failed. Make sure all files are in the same folder and you are viewing via a web server (not file://)');
+      }
+    }
+
+    function launchApp() {
+      document.querySelector('.status').style.display = 'none';
+      document.getElementById('app').className = 'show';
+      loadGameApp();
+    }
+
+    // Run checks after a short delay to ensure everything is loaded
+    setTimeout(runChecks, 500);
+  </script>
+
+  <!-- Load the actual game -->
+  <script type="text/babel" src="judgement-game.jsx"></script>
+  
+  <script type="text/babel">
+    function loadGameApp() {
+      const { StrictMode } = React;
+      const { createRoot } = ReactDOM;
+      const JudgementGame = window.JudgementGame;
+      
+      const root = createRoot(document.getElementById('app'));
+      root.render(
+        <StrictMode>
+          <JudgementGame />
+        </StrictMode>
+      );
+    }
+  </script>
+</body>
+</html>

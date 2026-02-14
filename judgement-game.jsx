@@ -1,5 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Heart, Club, Diamond, Spade, Users, Trophy, RotateCcw, Play, CheckCircle } from 'lucide-react';
+// Use global React
+const { useState, useEffect, createElement } = React;
+
+// Use global Lucide icons
+const { Heart, Club, Diamond, Spade, Users, Trophy, RotateCcw, Play, CheckCircle } = LucideReact;
 
 // Suit icons mapping
 const suitIcons = {
@@ -23,12 +26,19 @@ const suitSymbols = {
   Spades: '♠'
 };
 
+const PLAYER_EMOJIS = [
+  '🚗', '🚲', '🚀', '🚁', '🚜', '🏎️', '🚢', '🚂', 
+  '🌳', '🌴', '🌵', '🌻', '🍁', '🍄', '🌞', '🌙', 
+  '⭐', '☁️', '🌊', '🌋', '🎈', '🎨', '🍕', '🍦'
+];
+
 function JudgementGame() {
   // Game state
   const [gamePhase, setGamePhase] = useState('setup'); // setup, trump-selection, bidding, playing, round-end, game-end
   const [players, setPlayers] = useState([]);
   const [numPlayers, setNumPlayers] = useState(4);
-  const [playerNames, setPlayerNames] = useState(['']);
+  const [playerNames, setPlayerNames] = useState(['', '', '', '']);
+  const [startingCards, setStartingCards] = useState(13);
   
   // Round state
   const [currentRound, setCurrentRound] = useState(1);
@@ -56,9 +66,10 @@ function JudgementGame() {
         setGamePhase(state.gamePhase || 'setup');
         setPlayers(state.players || []);
         setNumPlayers(state.numPlayers || 4);
-        setPlayerNames(state.playerNames || ['']);
+        setPlayerNames(state.playerNames || ['', '', '', '']);
+        setStartingCards(state.startingCards || 13);
         setCurrentRound(state.currentRound || 1);
-        setCardsThisRound(state.cardsThisRound || 0);
+        setCardsThisRound(state.cardsThisRound || getMaxCardsPerPlayer(state.numPlayers || 4));
         setDealerIndex(state.dealerIndex || 0);
         setFirstBidderIndex(state.firstBidderIndex || 0);
         setTrumpSuit(state.trumpSuit || 'Hearts');
@@ -81,6 +92,7 @@ function JudgementGame() {
       players,
       numPlayers,
       playerNames,
+      startingCards,
       currentRound,
       cardsThisRound,
       dealerIndex,
@@ -105,7 +117,7 @@ function JudgementGame() {
 
   // Calculate total rounds
   const getTotalRounds = (numPlayers) => {
-    return getMaxCardsPerPlayer(numPlayers);
+    return startingCards || getMaxCardsPerPlayer(numPlayers);
   };
 
   // Get trump suit for a round (rotating pattern)
@@ -116,21 +128,33 @@ function JudgementGame() {
 
   // Start the game
   const startGame = () => {
-    const validNames = playerNames.filter(name => name.trim() !== '');
-    if (validNames.length < 2) {
-      alert('Please enter at least 2 player names');
+    if (numPlayers < 2 || numPlayers > 10) {
+      alert('Please enter between 2 and 10 players');
       return;
     }
 
-    const maxCards = getMaxCardsPerPlayer(validNames.length);
-    const initialPlayers = validNames.map(name => ({
-      name: name.trim(),
-      totalScore: 0
-    }));
+    const validNames = playerNames.filter(name => name.trim() !== '');
+    if (validNames.length !== numPlayers) {
+      alert(`Please enter names for all ${numPlayers} players`);
+      return;
+    }
+
+    const initialPlayers = validNames.map((name, idx) => {
+      // Pick a random emoji from the list, ensuring uniqueness if possible
+      const emojiPool = [...PLAYER_EMOJIS];
+      const randomIdx = Math.floor(Math.random() * (emojiPool.length - idx));
+      const emoji = emojiPool.splice(randomIdx, 1)[0];
+      
+      return {
+        name: name.trim(),
+        emoji: emoji || '👤',
+        totalScore: 0
+      };
+    });
 
     setPlayers(initialPlayers);
     setCurrentRound(1);
-    setCardsThisRound(maxCards);
+    setCardsThisRound(startingCards);
     setDealerIndex(0);
     setFirstBidderIndex(1 % validNames.length);
     setTrumpSuit(getDefaultTrumpSuit(1));
@@ -227,8 +251,7 @@ function JudgementGame() {
   // Start next round
   const nextRound = () => {
     const nextRoundNum = currentRound + 1;
-    const maxCards = getMaxCardsPerPlayer(players.length);
-    const nextCards = maxCards - (currentRound % maxCards);
+    const nextCards = startingCards - (currentRound % startingCards);
     
     if (nextCards < 1 || currentRound >= getTotalRounds(players.length)) {
       setGamePhase('game-end');
@@ -261,52 +284,6 @@ function JudgementGame() {
   if (gamePhase === 'setup') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-800 via-green-700 to-green-900 p-4 sm:p-8">
-        <style>{`
-          @import url('https://fonts.googleapis.com/css2?family=Crimson+Text:wght@600;700&family=Fredoka:wght@400;500;600&family=Poppins:wght@400;600;700&display=swap');
-          
-          body {
-            font-family: 'Poppins', sans-serif;
-          }
-          
-          .felt-texture {
-            background-image: 
-              repeating-linear-gradient(
-                90deg,
-                rgba(0, 0, 0, 0.03) 0px,
-                rgba(0, 0, 0, 0.03) 1px,
-                transparent 1px,
-                transparent 2px
-              ),
-              repeating-linear-gradient(
-                0deg,
-                rgba(0, 0, 0, 0.03) 0px,
-                rgba(0, 0, 0, 0.03) 1px,
-                transparent 1px,
-                transparent 2px
-              );
-          }
-          
-          .card-shadow {
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 
-                        0 2px 4px -1px rgba(0, 0, 0, 0.2),
-                        inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
-          }
-          
-          .gold-glow {
-            box-shadow: 0 0 20px rgba(251, 191, 36, 0.3),
-                        0 0 40px rgba(251, 191, 36, 0.2);
-          }
-          
-          @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-          }
-          
-          .float-animation {
-            animation: float 3s ease-in-out infinite;
-          }
-        `}</style>
-
         <div className="max-w-2xl mx-auto">
           {/* Header */}
           <div className="text-center mb-12 float-animation">
@@ -320,7 +297,7 @@ function JudgementGame() {
               Judgement
             </h1>
             <p className="text-green-200 text-lg" style={{ fontFamily: "'Fredoka', sans-serif" }}>
-              Kachuful Score Tracker
+              Vibe Coded by SP
             </p>
           </div>
 
@@ -336,22 +313,48 @@ function JudgementGame() {
             {/* Number of Players */}
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Number of Players
+                Number of Players (2-10)
               </label>
               <input
                 type="number"
                 min="2"
-                max="13"
+                max="10"
                 value={numPlayers}
                 onChange={(e) => {
-                  const num = parseInt(e.target.value) || 2;
+                  let num = parseInt(e.target.value);
+                  if (isNaN(num)) return;
+                  if (num > 10) num = 10;
+                  if (num < 1) num = 1; // Allow typing but clamp on start
                   setNumPlayers(num);
                   setPlayerNames(Array(num).fill(''));
+                  setStartingCards(getMaxCardsPerPlayer(num));
+                }}
+                className="w-full px-4 py-3 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              />
+            </div>
+
+            {/* Starting Cards */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Starting Cards (1-{getMaxCardsPerPlayer(numPlayers)})
+              </label>
+              <input
+                type="number"
+                min="1"
+                max={getMaxCardsPerPlayer(numPlayers)}
+                value={startingCards}
+                onChange={(e) => {
+                  let val = parseInt(e.target.value);
+                  const max = getMaxCardsPerPlayer(numPlayers);
+                  if (isNaN(val)) return;
+                  if (val > max) val = max;
+                  if (val < 1) val = 1;
+                  setStartingCards(val);
                 }}
                 className="w-full px-4 py-3 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
               />
               <p className="text-sm text-gray-600 mt-2">
-                Max cards per player: {getMaxCardsPerPlayer(numPlayers)} | Total rounds: {getTotalRounds(numPlayers)}
+                Total rounds in this game: {startingCards}
               </p>
             </div>
 
@@ -424,7 +427,7 @@ function JudgementGame() {
           <div className="bg-white/95 rounded-2xl p-8 card-shadow felt-texture">
             <div className="text-center mb-8">
               <h3 className="text-2xl font-semibold text-gray-800 mb-2" style={{ fontFamily: "'Fredoka', sans-serif" }}>
-                Dealer: {players[dealerIndex].name}
+                Dealer: {players[dealerIndex].emoji} {players[dealerIndex].name}
               </h3>
               <p className="text-gray-600">Select the trump suit for this round</p>
             </div>
@@ -503,7 +506,7 @@ function JudgementGame() {
                   </h2>
                   <div className="flex items-center gap-2 mt-2">
                     <span className="text-gray-600">Trump:</span>
-                    {React.createElement(suitIcons[trumpSuit], {
+                    {createElement(suitIcons[trumpSuit], {
                       className: "w-5 h-5",
                       style: { color: suitColors[trumpSuit] },
                       fill: "currentColor"
@@ -534,7 +537,7 @@ function JudgementGame() {
                   >
                     <div>
                       <p className="font-semibold text-lg text-gray-800" style={{ fontFamily: "'Fredoka', sans-serif" }}>
-                        {player.name}
+                        {player.emoji} {player.name}
                       </p>
                       <p className="text-sm text-gray-600">
                         {idx === firstBidderIndex && '(First bidder)'}
@@ -588,7 +591,7 @@ function JudgementGame() {
                 </h2>
                 <div className="flex items-center gap-2 mt-2">
                   <span className="text-gray-600">Trump:</span>
-                  {React.createElement(suitIcons[trumpSuit], {
+                  {createElement(suitIcons[trumpSuit], {
                     className: "w-5 h-5",
                     style: { color: suitColors[trumpSuit] },
                     fill: "currentColor"
@@ -610,7 +613,7 @@ function JudgementGame() {
             <div className="text-center mb-6">
               <p className="text-gray-600 mb-2">Current Bidder</p>
               <h3 className="text-4xl font-bold text-green-700" style={{ fontFamily: "'Fredoka', sans-serif" }}>
-                {players[currentBidderIndex].name}
+                {players[currentBidderIndex].emoji} {players[currentBidderIndex].name}
               </h3>
               {isLastBidder && forbiddenBid !== null && (
                 <div className="mt-4 bg-red-50 border-2 border-red-300 rounded-lg p-4">
@@ -661,7 +664,7 @@ function JudgementGame() {
                       : 'border-gray-200 bg-gray-50'
                   }`}
                 >
-                  <p className="text-sm text-gray-600 truncate">{player.name}</p>
+                  <p className="text-sm text-gray-600 truncate">{player.emoji} {player.name}</p>
                   <p className="text-2xl font-bold text-gray-800">
                     {bids[idx] !== null ? bids[idx] : '—'}
                   </p>
@@ -688,7 +691,7 @@ function JudgementGame() {
                 </h2>
                 <div className="flex items-center gap-2 mt-2">
                   <span className="text-gray-600">Trump:</span>
-                  {React.createElement(suitIcons[trumpSuit], {
+                  {createElement(suitIcons[trumpSuit], {
                     className: "w-5 h-5",
                     style: { color: suitColors[trumpSuit] },
                     fill: "currentColor"
@@ -713,7 +716,7 @@ function JudgementGame() {
                   <div className="flex justify-between items-center mb-3">
                     <div>
                       <p className="font-semibold text-lg text-gray-800" style={{ fontFamily: "'Fredoka', sans-serif" }}>
-                        {player.name}
+                        {player.emoji} {player.name}
                       </p>
                       <p className="text-sm text-gray-600">
                         Bid: <span className="font-bold text-green-700">{bids[idx]}</span>
@@ -795,7 +798,7 @@ function JudgementGame() {
                     <div className="flex justify-between items-center">
                       <div className="flex-1">
                         <p className="font-semibold text-lg text-gray-800" style={{ fontFamily: "'Fredoka', sans-serif" }}>
-                          {player.name}
+                          {player.emoji} {player.name}
                         </p>
                         <p className={`text-sm font-medium ${success ? 'text-green-700' : 'text-red-700'}`}>
                           Bid: {bid} | Won: {won} {success ? '✓' : '❌'}
@@ -841,7 +844,7 @@ function JudgementGame() {
                         #{rank + 1}
                       </span>
                       <span className="font-semibold text-lg text-gray-800" style={{ fontFamily: "'Fredoka', sans-serif" }}>
-                        {player.name}
+                        {player.emoji} {player.name}
                       </span>
                     </div>
                     <span className={`text-3xl font-bold ${rank === 0 ? 'text-amber-700' : 'text-gray-700'}`}>
@@ -892,7 +895,7 @@ function JudgementGame() {
             </h1>
             <p className="text-amber-100 text-lg mb-4">Winner</p>
             <p className="text-6xl font-bold text-white" style={{ fontFamily: "'Fredoka', sans-serif" }}>
-              {winner.name}
+              {winner.emoji} {winner.name}
             </p>
             <p className="text-3xl text-amber-100 mt-2">
               {winner.score} points
@@ -931,7 +934,7 @@ function JudgementGame() {
                       <span className={`font-semibold text-xl ${
                         rank === 0 ? 'text-amber-800' : 'text-gray-800'
                       }`} style={{ fontFamily: "'Fredoka', sans-serif" }}>
-                        {player.name}
+                        {player.emoji} {player.name}
                       </span>
                     </div>
                     <span className={`text-4xl font-bold ${
@@ -960,3 +963,6 @@ function JudgementGame() {
 
   return null;
 }
+
+// Make component available globally for browser usage
+window.JudgementGame = JudgementGame;

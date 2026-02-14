@@ -1,4 +1,4 @@
-const CACHE_NAME = 'judgement-v1';
+const CACHE_NAME = 'judgement-v3';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -10,7 +10,8 @@ const urlsToCache = [
   'https://unpkg.com/react@18/umd/react.production.min.js',
   'https://unpkg.com/react-dom@18/umd/react-dom.production.min.js',
   'https://unpkg.com/@babel/standalone/babel.min.js',
-  'https://unpkg.com/lucide@latest',
+  'https://unpkg.com/lucide-react',
+  'https://cdn.tailwindcss.com',
   'https://fonts.googleapis.com/css2?family=Crimson+Text:wght@600;700&family=Fredoka:wght@400;500;600&family=Poppins:wght@400;600;700&display=swap'
 ];
 

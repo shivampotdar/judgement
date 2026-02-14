@@ -11,6 +11,9 @@
   
   <title>Judgement Score Tracker</title>
   
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
   <!-- PWA Manifest -->
   <link rel="manifest" href="/manifest.json">
   
@@ -77,6 +80,51 @@
       font-size: 18px;
       font-weight: 600;
     }
+
+    /* Game Styles */
+    @import url('https://fonts.googleapis.com/css2?family=Crimson+Text:wght@600;700&family=Fredoka:wght@400;500;600&family=Poppins:wght@400;600;700&display=swap');
+          
+    body {
+      font-family: 'Poppins', sans-serif;
+    }
+    
+    .felt-texture {
+      background-image: 
+        repeating-linear-gradient(
+          90deg,
+          rgba(0, 0, 0, 0.03) 0px,
+          rgba(0, 0, 0, 0.03) 1px,
+          transparent 1px,
+          transparent 2px
+        ),
+        repeating-linear-gradient(
+          0deg,
+          rgba(0, 0, 0, 0.03) 0px,
+          rgba(0, 0, 0, 0.03) 1px,
+          transparent 1px,
+          transparent 2px
+        );
+    }
+    
+    .card-shadow {
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 
+                  0 2px 4px -1px rgba(0, 0, 0, 0.2),
+                  inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+    }
+    
+    .gold-glow {
+      box-shadow: 0 0 20px rgba(251, 191, 36, 0.3),
+                  0 0 40px rgba(251, 191, 36, 0.2);
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    .float-animation {
+      animation: float 3s ease-in-out infinite;
+    }
   </style>
 </head>
 <body>
@@ -92,12 +140,19 @@
   <!-- React and ReactDOM from CDN -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script>window.react = React;</script>
   
   <!-- Babel Standalone for JSX transformation -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Lucide Icons - Use Lucide React -->
+  <script src="https://unpkg.com/lucide-react"></script>
+  <script>
+    // Wait for LucideReact to be available
+    if (typeof LucideReact === 'undefined') {
+      console.error('LucideReact failed to load');
+    }
+  </script>
   
   <!-- App Component -->
   <script type="text/babel" src="judgement-game.jsx"></script>
@@ -107,23 +162,38 @@
     const { StrictMode } = React;
     const { createRoot } = ReactDOM;
     
-    // Hide loading screen and render app
-    const root = createRoot(document.getElementById('root'));
-    root.render(
-      <StrictMode>
-        <JudgementGame />
-      </StrictMode>
-    );
-    
-    // Remove loading screen after a brief delay
-    setTimeout(() => {
-      const loading = document.getElementById('loading');
-      if (loading) {
-        loading.style.opacity = '0';
-        loading.style.transition = 'opacity 0.3s ease';
-        setTimeout(() => loading.remove(), 300);
+    // Wait for component to be available and render
+    function initApp() {
+      if (typeof window.JudgementGame === 'undefined') {
+        console.log('Waiting for JudgementGame component...');
+        setTimeout(initApp, 100);
+        return;
       }
-    }, 500);
+      
+      // Get component from window
+      const JudgementGame = window.JudgementGame;
+      
+      // Hide loading screen and render app
+      const root = createRoot(document.getElementById('root'));
+      root.render(
+        <StrictMode>
+          <JudgementGame />
+        </StrictMode>
+      );
+      
+      // Remove loading screen after a brief delay
+      setTimeout(() => {
+        const loading = document.getElementById('loading');
+        if (loading) {
+          loading.style.opacity = '0';
+          loading.style.transition = 'opacity 0.3s ease';
+          setTimeout(() => loading.remove(), 300);
+        }
+      }, 500);
+    }
+    
+    // Start initialization
+    initApp();
   </script>
   
   <!-- Service Worker Registration -->
