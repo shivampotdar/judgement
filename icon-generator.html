@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Icon Generator</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #166534;
+      margin-bottom: 10px;
+    }
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+    }
+    .preview {
+      display: flex;
+      gap: 30px;
+      margin: 30px 0;
+      flex-wrap: wrap;
+    }
+    .icon-preview {
+      text-align: center;
+    }
+    .icon-preview img {
+      border: 2px solid #ddd;
+      border-radius: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .icon-preview p {
+      margin-top: 10px;
+      color: #666;
+      font-weight: 500;
+    }
+    button {
+      background: #166534;
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      margin: 10px 10px 10px 0;
+    }
+    button:hover {
+      background: #15803d;
+    }
+    .success {
+      background: #10b981;
+      padding: 15px;
+      border-radius: 6px;
+      color: white;
+      margin-top: 20px;
+      display: none;
+    }
+    canvas {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎴 Judgement PWA Icon Generator</h1>
+    <p class="subtitle">Generate PNG icons for your Progressive Web App</p>
+    
+    <div class="preview">
+      <div class="icon-preview">
+        <img id="preview192" width="192" height="192" alt="192x192 icon">
+        <p>192×192px</p>
+        <button onclick="downloadIcon(192)">Download</button>
+      </div>
+      <div class="icon-preview">
+        <img id="preview512" width="192" height="192" alt="512x512 icon">
+        <p>512×512px (Preview at 192px)</p>
+        <button onclick="downloadIcon(512)">Download</button>
+      </div>
+    </div>
+    
+    <button onclick="generateIcons()">Generate All Icons</button>
+    
+    <div class="success" id="success">
+      ✓ Icons generated! Click the download buttons above to save them.
+    </div>
+  </div>
+
+  <canvas id="canvas"></canvas>
+
+  <script>
+    const svgData = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#166534;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#15803d;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="80" fill="url(#bgGradient)"/>
+  <rect width="512" height="512" rx="80" fill="url(#bgGradient)" opacity="0.1"/>
+  <path d="M 100 120 C 100 100, 80 90, 70 90 C 50 90, 40 100, 40 120 C 40 150, 100 180, 100 180 C 100 180, 160 150, 160 120 C 160 100, 150 90, 130 90 C 120 90, 100 100, 100 120 Z" fill="#DC2626"/>
+  <path d="M 412 180 C 412 180, 352 150, 352 120 C 352 100, 362 90, 382 90 C 392 90, 412 100, 412 100 C 412 100, 432 90, 442 90 C 462 90, 472 100, 472 120 C 472 150, 412 180, 412 180 M 412 180 L 402 200 L 422 200 Z" fill="#1F2937"/>
+  <path d="M 100 392 L 70 332 L 100 272 L 130 332 Z" fill="#DC2626"/>
+  <path d="M 412 272 C 432 272, 442 282, 442 292 C 442 302, 432 312, 412 312 C 412 312, 412 332, 432 332 C 432 332, 432 342, 422 342 C 412 342, 412 342, 402 342 C 392 342, 392 332, 392 332 C 412 332, 412 312, 412 312 C 392 312, 382 302, 382 292 C 382 282, 392 272, 412 272" fill="#1F2937"/>
+  <g transform="translate(256, 256)">
+    <path d="M -60 -40 L -50 60 L 50 60 L 60 -40 Z" fill="#fbbf24" stroke="#f59e0b" stroke-width="4"/>
+    <path d="M -70 -40 L -60 -80 L 60 -80 L 70 -40 Z" fill="#fbbf24" stroke="#f59e0b" stroke-width="4"/>
+    <path d="M -70 -60 Q -90 -60, -90 -40 T -70 -20" fill="none" stroke="#f59e0b" stroke-width="6"/>
+    <path d="M 70 -60 Q 90 -60, 90 -40 T 70 -20" fill="none" stroke="#f59e0b" stroke-width="6"/>
+    <rect x="-30" y="60" width="60" height="15" fill="#f59e0b"/>
+    <rect x="-40" y="75" width="80" height="8" fill="#f59e0b"/>
+  </g>
+</svg>`;
+
+    function generateIcon(size) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = size;
+        canvas.height = size;
+        
+        img.onload = function() {
+          ctx.drawImage(img, 0, 0, size, size);
+          resolve(canvas.toDataURL('image/png'));
+        };
+        
+        const blob = new Blob([svgData], { type: 'image/svg+xml' });
+        const url = URL.createObjectURL(blob);
+        img.src = url;
+      });
+    }
+
+    async function generateIcons() {
+      const icon192 = await generateIcon(192);
+      const icon512 = await generateIcon(512);
+      
+      document.getElementById('preview192').src = icon192;
+      document.getElementById('preview512').src = icon512;
+      document.getElementById('success').style.display = 'block';
+      
+      window.icon192Data = icon192;
+      window.icon512Data = icon512;
+    }
+
+    function downloadIcon(size) {
+      const dataUrl = size === 192 ? window.icon192Data : window.icon512Data;
+      if (!dataUrl) {
+        alert('Please generate icons first!');
+        return;
+      }
+      
+      const link = document.createElement('a');
+      link.download = `icon-${size}.png`;
+      link.href = dataUrl;
+      link.click();
+    }
+
+    // Auto-generate on load
+    window.addEventListener('load', generateIcons);
+  </script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+{
+  "name": "judgement-score-tracker",
+  "version": "1.0.0",
+  "description": "PWA for tracking Judgement/Kachuful card game scores",
+  "scripts": {
+    "start": "npx serve .",
+    "dev": "npx serve . -p 8000"
+  },
+  "keywords": [
+    "pwa",
+    "card-game",
+    "judgement",
+    "kachuful",
+    "score-tracker"
+  ],
+  "author": "",
+  "license": "MIT"
+}
