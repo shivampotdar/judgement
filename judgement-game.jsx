@@ -2,7 +2,7 @@
 const { useState, useEffect, createElement } = React;
 
 // Use global Lucide icons
-const { Heart, Club, Diamond, Spade, Users, Trophy, RotateCcw, Play, CheckCircle, XCircle } = LucideReact;
+const { Heart, Club, Diamond, Spade, Users, Trophy, RotateCcw, Play, CheckCircle, XCircle, Download } = LucideReact;
 
 // Suit icons mapping
 const suitIcons = {
@@ -56,6 +56,27 @@ function JudgementGame() {
   // Scores
   const [roundScores, setRoundScores] = useState([]);
   const [cumulativeScores, setCumulativeScores] = useState([]);
+
+  // PWA Install Prompt
+  const [installPrompt, setInstallPrompt] = useState(null);
+
+  useEffect(() => {
+    const handler = (e) => {
+      e.preventDefault();
+      setInstallPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstall = async () => {
+    if (!installPrompt) return;
+    installPrompt.prompt();
+    const { outcome } = await installPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setInstallPrompt(null);
+    }
+  };
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -383,12 +404,24 @@ function JudgementGame() {
             {/* Start Button */}
             <button
               onClick={startGame}
-              className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-semibold py-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 gold-glow"
+              className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-semibold py-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 gold-glow mb-4"
               style={{ fontFamily: "'Fredoka', sans-serif" }}
             >
               <Play className="w-5 h-5" />
               Start Game
             </button>
+
+            {/* Install Button */}
+            {installPrompt && (
+              <button
+                onClick={handleInstall}
+                className="w-full bg-white border-2 border-amber-500 text-amber-600 hover:bg-amber-50 font-semibold py-3 rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
+                style={{ fontFamily: "'Fredoka', sans-serif" }}
+              >
+                <Download className="w-5 h-5" />
+                Install App for Offline Use
+              </button>
+            )}
           </div>
         </div>
       </div>
