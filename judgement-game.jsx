@@ -149,14 +149,22 @@ function JudgementGame() {
 
   // Start the game
   const startGame = () => {
-    if (numPlayers < 2 || numPlayers > 10) {
+    const playersCount = parseInt(numPlayers);
+    const startCards = parseInt(startingCards);
+
+    if (isNaN(playersCount) || playersCount < 2 || playersCount > 10) {
       alert('Please enter between 2 and 10 players');
       return;
     }
 
-    const validNames = playerNames.filter(name => name.trim() !== '');
-    if (validNames.length !== numPlayers) {
-      alert(`Please enter names for all ${numPlayers} players`);
+    if (isNaN(startCards) || startCards < 1 || startCards > getMaxCardsPerPlayer(playersCount)) {
+      alert(`Please enter between 1 and ${getMaxCardsPerPlayer(playersCount)} starting cards`);
+      return;
+    }
+
+    const validNames = playerNames.filter(name => name && name.trim() !== '');
+    if (validNames.length !== playersCount) {
+      alert(`Please enter names for all ${playersCount} players`);
       return;
     }
 
@@ -342,13 +350,20 @@ function JudgementGame() {
                 max="10"
                 value={numPlayers}
                 onChange={(e) => {
-                  let num = parseInt(e.target.value);
+                  const val = e.target.value;
+                  if (val === '') {
+                    setNumPlayers('');
+                    return;
+                  }
+                  let num = parseInt(val);
                   if (isNaN(num)) return;
                   if (num > 10) num = 10;
-                  if (num < 1) num = 1; // Allow typing but clamp on start
+                  // Allow 0 or 1 while typing, but startGame will validate
                   setNumPlayers(num);
-                  setPlayerNames(Array(num).fill(''));
-                  setStartingCards(getMaxCardsPerPlayer(num));
+                  if (num >= 2) {
+                    setPlayerNames(Array(num).fill(''));
+                    setStartingCards(getMaxCardsPerPlayer(num));
+                  }
                 }}
                 className="w-full px-4 py-3 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
               />
@@ -357,25 +372,29 @@ function JudgementGame() {
             {/* Starting Cards */}
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Starting Cards (1-{getMaxCardsPerPlayer(numPlayers)})
+                Starting Cards {numPlayers >= 2 ? `(1-${getMaxCardsPerPlayer(numPlayers)})` : ''}
               </label>
               <input
                 type="number"
                 min="1"
-                max={getMaxCardsPerPlayer(numPlayers)}
+                max={numPlayers >= 2 ? getMaxCardsPerPlayer(numPlayers) : 52}
                 value={startingCards}
                 onChange={(e) => {
-                  let val = parseInt(e.target.value);
-                  const max = getMaxCardsPerPlayer(numPlayers);
-                  if (isNaN(val)) return;
-                  if (val > max) val = max;
-                  if (val < 1) val = 1;
-                  setStartingCards(val);
+                  const val = e.target.value;
+                  if (val === '') {
+                    setStartingCards('');
+                    return;
+                  }
+                  let num = parseInt(val);
+                  if (isNaN(num)) return;
+                  const max = numPlayers >= 2 ? getMaxCardsPerPlayer(numPlayers) : 52;
+                  if (num > max) num = max;
+                  setStartingCards(num);
                 }}
                 className="w-full px-4 py-3 border-2 border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
               />
               <p className="text-sm text-gray-600 mt-2">
-                Total rounds in this game: {startingCards}
+                Total rounds in this game: {startingCards || 0}
               </p>
             </div>
 
