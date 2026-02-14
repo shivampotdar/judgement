@@ -1,10 +1,12 @@
-const CACHE_NAME = 'judgement-v5';
+const CACHE_NAME = 'judgement-v6';
 const urlsToCache = [
   './',
   './index.html',
   './judgement-game.jsx',
   './manifest.json',
   './icon.svg',
+  './icon-192.png',
+  './icon-512.png',
   'https://unpkg.com/react@18/umd/react.production.min.js',
   'https://unpkg.com/react-dom@18/umd/react-dom.production.min.js',
   'https://unpkg.com/@babel/standalone/babel.min.js',
