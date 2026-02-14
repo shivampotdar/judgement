@@ -200,9 +200,15 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-          .then(registration => console.log('SW registered:', registration))
-          .catch(err => console.log('SW registration failed:', err));
+        navigator.serviceWorker.register('./sw.js')
+          .then(registration => {
+            console.log('SW registered with scope:', registration.scope);
+            // Check for existing install prompt capability
+            window.addEventListener('appinstalled', () => {
+              console.log('PWA was installed');
+            });
+          })
+          .catch(err => console.error('SW registration failed:', err));
       });
     }
   </script>
