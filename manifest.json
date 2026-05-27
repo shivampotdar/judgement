@@ -47,8 +47,8 @@
       "name": "New Game",
       "short_name": "New Game",
       "description": "Start a new Judgement game",
-      "url": "/",
-      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+      "url": "./",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
     }
   ]
 }
