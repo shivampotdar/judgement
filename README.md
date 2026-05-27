@@ -196,3 +196,5 @@ Built with:
 ---
 
 **Enjoy your Judgement games! 🎴**
+
+<!-- Last deployment: 2026-05-28T00:23:40.161866 -->
