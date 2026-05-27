@@ -144,9 +144,7 @@
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script>window.react = React;</script>
   
-  <!-- Babel Standalone for JSX transformation -->
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  
+
   <!-- Lucide Icons - Use Lucide React -->
   <script src="https://cdn.jsdelivr.net/npm/lucide-react@1/dist/umd/lucide-react.min.js"></script>
   <script>
@@ -156,11 +154,11 @@
     }
   </script>
   
-  <!-- App Component -->
-  <script type="text/babel" src="judgement-game.jsx"></script>
+  <!-- App Component (pre-compiled) -->
+  <script src="judgement-game.js"></script>
   
   <!-- Initialize -->
-  <script type="text/babel">
+  <script>
     const { StrictMode } = React;
     const { createRoot } = ReactDOM;
     
@@ -172,18 +170,15 @@
         return;
       }
       
-      // Get component from window
       const JudgementGame = window.JudgementGame;
-      
-      // Hide loading screen and render app
       const root = createRoot(document.getElementById('root'));
+      
       root.render(
-        <StrictMode>
-          <JudgementGame />
-        </StrictMode>
+        React.createElement(StrictMode, null,
+          React.createElement(JudgementGame, null)
+        )
       );
       
-      // Remove loading screen after a brief delay
       setTimeout(() => {
         const loading = document.getElementById('loading');
         if (loading) {
@@ -194,7 +189,6 @@
       }, 500);
     }
     
-    // Start initialization
     initApp();
   </script>
   
